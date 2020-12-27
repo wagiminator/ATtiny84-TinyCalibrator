@@ -587,7 +587,7 @@ volatile uint8_t FRQ_busy;
 void FRQ_init(void) {
   OCR1A  = 48192;                   // timer1 compare match A after 32 ms
   TIMSK0 = (1<<TOIE0);              // enable timer0 overflow interrupt
-  TIMSK1 = (1<<OCIE1A);             // enable timer1 compare A match interrupt
+  TIMSK1 = (1<<OCIE1A);             // enable timer1 compare match A interrupt
   sei();                            // enable global interrupts
 }
 
