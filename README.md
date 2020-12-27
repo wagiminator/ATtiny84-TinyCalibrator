@@ -3,7 +3,7 @@ Because the 8-pin ATtinys only have a few pins available, they are usually opera
 
 - Project Files (EasyEDA): https://easyeda.com/wagiminator/attiny84-tinycalibrator
 
-![pic3.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic3.jpg)
+![pic2.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic2.jpg)
 
 # Hardware
 The TinyCalibrator is supplied with 5V via a [Micro USB connector](https://aliexpress.com/wholesale?SearchText=micro+usb+2pin+dip). Since the frequency of the oscillator depends on the supply voltage of the ATtiny, an [HT7333](https://datasheet.lcsc.com/szlcsc/Holtek-Semicon-HT7333-A_C21583.pdf) voltage regulator was integrated. A switch can then be used to choose whether the oscillator should be calibrated for 3.3V or 5V.
