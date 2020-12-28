@@ -83,7 +83,7 @@ The I²C protocol implementation is based on a crude bitbanging method. It was s
 # Operating Instructions
 1. Select the desired supply voltage (3.3V or 5V) with the switch.
 2. Connect a 5V power supply to the micro USB port.
-3. Place the ATtiny13/25/45/85 in the IC socket and press any key.
+3. Place the ATtiny13/25/45/85 in the IC socket and press any key. Use an [SOP adapter](https://aliexpress.com/wholesale?SearchText=sop-8+150mil+adapter) for SMD parts.
 4. Select the function you want and follow the instructions on the display.
 
 After the calibration process, the optimal OSCCAL value remains in address 0 of the EEPROM and can continue to be used.
