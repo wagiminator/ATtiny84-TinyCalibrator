@@ -86,7 +86,17 @@ The I²C protocol implementation is based on a crude bitbanging method. It was s
 3. Place the ATtiny13/25/45/85 in the IC socket and press any key. Use an [SOP adapter](https://aliexpress.com/wholesale?SearchText=sop-8+150mil+200mil+adapter) for SMD parts.
 4. Select the function you want and follow the instructions on the display.
 
-After the calibration process, the optimal OSCCAL value remains in address 0 of the EEPROM and can continue to be used.
+After the calibration process, the optimal OSCCAL value remains in memory address 0 of the EEPROM and can continue to be used. To do this, program the EEFUSE to preserve EEPROM memory through the chip erase cycle, otherwise the OSCCAL value will be lost after uploading new firmware. Your code should then contain the following lines:
+
+```c
+#include <avr/eeprom.h>
+void readOSCCAL(void) {
+  uint8_t value = eeprom_read_byte(0);
+  if (value < 0xFF) OSCCAL = value;
+}
+```
+
+Of course, the OSCCAL value can also be set directly without an EEPROM.
 
 # References, Links and Notes
 1. [TinyHVSP](https://github.com/wagiminator/ATtiny84-TinyHVSP)
