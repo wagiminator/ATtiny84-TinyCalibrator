@@ -80,6 +80,14 @@ The I²C protocol implementation is based on a crude bitbanging method. It was s
 - Navigate to the folder with the makefile and main.c.
 - Run "make install" to compile, burn the fuses and upload the firmware.
 
+# Operating Instructions
+1. Select the desired supply voltage (3.3V or 5V) with the switch.
+2. Connect a 5V power supply to the micro USB port.
+3. Place the ATtiny13/25/45/85 in the IC socket and press any key.
+4. Select the function you want and follow the instructions on the display.
+
+After the calibration process, the optimal OSCCAL value remains in address 0 of the EEPROM and can continue to be used.
+
 # References, Links and Notes
 1. [TinyHVSP](https://github.com/wagiminator/ATtiny84-TinyHVSP)
 2. [I²C OLED Tutorial](https://github.com/wagiminator/attiny13-tinyoleddemo)
