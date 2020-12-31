@@ -78,6 +78,7 @@ uint16_t frequency;                           // for measures frequency in kHz
 #define I2C_SCL_HIGH()  DDRA &= ~(1<<I2C_SCL) // release SCL   -> pulled HIGH by resistor
 #define I2C_SCL_LOW()   DDRA |=  (1<<I2C_SCL) // SCL as output -> pulled LOW  by MCU
 #define I2C_DELAY()     asm("lpm")            // delay 3 clock cycles
+#define I2C_CLOCKOUT()  I2C_SCL_HIGH();I2C_DELAY();I2C_SCL_LOW()  // clock out
 
 // I2C init function
 void I2C_init(void) {
@@ -87,20 +88,13 @@ void I2C_init(void) {
 
 // I2C transmit one data byte to the slave, ignore ACK bit, no clock stretching allowed
 void I2C_write(uint8_t data) {
-  I2C_DELAY();                            // delay 3 clock cycles
   for(uint8_t i = 8; i; i--, data<<=1) {  // transmit 8 bits, MSB first
     (data & 0x80) ? (I2C_SDA_HIGH()) : (I2C_SDA_LOW());  // SDA HIGH if bit is 1
-    I2C_DELAY();                          // delay 3 clock cycles
-    I2C_SCL_HIGH();                       // clock HIGH -> slave reads the bit
-    I2C_DELAY();                          // delay 3 clock cycles
-    I2C_SCL_LOW();                        // clock LOW again
+    I2C_CLOCKOUT();                       // clock out -> slave reads the bit
   }
   I2C_DELAY();                            // delay 3 clock cycles
-  I2C_DELAY();                            // delay 3 clock cycles
   I2C_SDA_HIGH();                         // release SDA for ACK bit of slave
-  I2C_SCL_HIGH();                         // 9th clock pulse is for the ACK bit
-  I2C_DELAY();                            // delay 3 clock cycles
-  I2C_SCL_LOW();                          // but ACK bit is ignored
+  I2C_CLOCKOUT();                         // 9th clock pulse is for the ignored ACK bit
 }
 
 // I2C start transmission
@@ -327,7 +321,7 @@ void OLED_printDec(uint16_t value) {
 #define HVSP_SDI_LOW()    PORTA &= ~(1<<SDI_PIN)
 #define HVSP_SDO_REL()    DDRA  &= ~(1<<SDO_PIN)
 #define HVSP_SDO_BIT      (PINA &   (1<<SDO_PIN))
-#define HVSP_CLOCK_OUT()  {HVSP_SCI_HIGH(); asm("nop"); HVSP_SCI_LOW();}
+#define HVSP_CLOCKOUT()   {HVSP_SCI_HIGH(); asm("nop"); HVSP_SCI_LOW();}
 
 // Program for ATtiny13
 const uint8_t PROG_T13_LENGTH = 72;
@@ -398,7 +392,7 @@ uint8_t HVSP_sendInstr(uint8_t SDI_BYTE, uint8_t SII_BYTE) {
   // send start bit
   HVSP_SDI_LOW();
   HVSP_SII_LOW();
-  HVSP_CLOCK_OUT();
+  HVSP_CLOCKOUT();
 
   // send instruction bytes; receive reply
   for(uint8_t i=8; i; i--) {
@@ -408,14 +402,14 @@ uint8_t HVSP_sendInstr(uint8_t SDI_BYTE, uint8_t SII_BYTE) {
     SII_BYTE <<= 1;
     SDO_BYTE <<= 1;
     if(HVSP_SDO_BIT) SDO_BYTE |= 1;
-    HVSP_CLOCK_OUT();
+    HVSP_CLOCKOUT();
   }
       
   // send end bits
   HVSP_SDI_LOW();
   HVSP_SII_LOW();
-  HVSP_CLOCK_OUT();
-  HVSP_CLOCK_OUT();
+  HVSP_CLOCKOUT();
+  HVSP_CLOCKOUT();
         
   return SDO_BYTE;
 }
