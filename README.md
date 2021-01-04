@@ -96,7 +96,7 @@ void readOSCCAL(void) {
 }
 ```
 
-Of course, the OSCCAL value can also be set directly without an EEPROM. Remember that the OSCCAL value is displayed in hexadecimal.
+Of course, the OSCCAL value can also be set directly without the EEPROM. Remember that the OSCCAL value is displayed in hexadecimal.
 
 ```c
 OSCCAL = 0x66;
