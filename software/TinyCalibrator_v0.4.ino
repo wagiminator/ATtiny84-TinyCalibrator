@@ -30,8 +30,11 @@
 // The I²C OLED implementation is based on TinyOLEDdemo
 // https://github.com/wagiminator/ATtiny13-TinyOLEDdemo
 //
-// Controller:  ATtiny44/84
-// Clockspeed:  12 MHz external
+// Core:          ATtinyCore (https://github.com/SpenceKonde/ATTinyCore)
+// Board:         ATtiny24/44/84(a) (No bootloader)
+// Chip:          ATtiny44(a) or ATtiny84(a)
+// Clock:         12 MHz (external)
+// Millis/Micros: disabled
 //
 // 2020 by Stefan Wagner 
 // Project Files (EasyEDA): https://easyeda.com/wagiminator
