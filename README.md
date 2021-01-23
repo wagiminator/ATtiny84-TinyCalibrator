@@ -1,6 +1,7 @@
-# TinyCalibrator - OSC Calibrator and High Voltage Fuse Resetter
-Because the 8-pin ATtinys only have a few GPIO pins available, they are usually operated without an external clock. The internal oscillator does a good job in most applications, but when it comes to precise timing, its +/-10% accuracy is often insufficient. Fortunately, the oscillator can be calibrated, increasing its accuracy to +/-2% or better. There are a few ways to perform this manual calibration, but several steps are required. The TinyCalibrator does this fully automatically by a push of a button. In order to make the device more versatile, a high voltage fuse resetter was also integrated, with which "bricked" ATtinys can be reset to the factory state.
+# TinyCalibrator - OSC Calibrator and High-Voltage Fuse Resetter
+Because the 8-pin ATtinys only have a few GPIO pins available, they are usually operated without an external clock. The internal oscillator does a good job in most applications, but when it comes to precise timing, its +/-10% accuracy is often insufficient. Fortunately, the oscillator can be calibrated, increasing its accuracy to +/-2% or better. There are a few ways to perform this manual calibration, but several steps are required. The TinyCalibrator does this fully automatically by a push of a button. In order to make the device more versatile, a high-voltage fuse resetter was also integrated, with which "bricked" ATtinys can be reset to the factory state.
 
+- Project Video (YouTube): https://youtu.be/PQvtNVte2JE
 - Project Files (EasyEDA): https://easyeda.com/wagiminator/attiny84-tinycalibrator
 
 ![pic2.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic2.jpg)
@@ -10,7 +11,7 @@ The TinyCalibrator is supplied with 5V via a [Micro USB connector](https://aliex
 
 The [ATtiny84](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf) was chosen as the microcontroller for the TinyCalibrator because it has exactly the necessary number of GPIO pins. For accurate frequency measurements, the ATtiny84 is operated with an external 12 MHz crystal. Since the current software version only requires about 3.7 kByte, an ATtiny44 can also be used.
 
-To generate the 12V for the High Voltage Serial Programmer, an [ST662A](https://datasheet.lcsc.com/szlcsc/2004081608_STMicroelectronics-ST662ACD-TR_C500661.pdf) charge pump IC was chosen, which was specially designed for such applications and needs only a few external components. The 12V is controlled by a MOSFET and applied to the RESET pin of the target ATtiny if necessary. The remaining programming lines to the target are protected against a short circuit with resistors.
+To generate the 12V for the High-Voltage Serial Programmer, an [ST662A](https://datasheet.lcsc.com/szlcsc/2004081608_STMicroelectronics-ST662ACD-TR_C500661.pdf) charge pump IC was chosen, which was specially designed for such applications and needs only a few external components. The 12V is controlled by a MOSFET and applied to the RESET pin of the target ATtiny if necessary. The remaining programming lines to the target are protected against a short circuit with resistors.
 
 The user interface utilizes three buttons and a [128x64 pixels OLED display](http://aliexpress.com/wholesale?SearchText=128+64+0.96+oled+new+4pin).
 
@@ -18,7 +19,7 @@ The user interface utilizes three buttons and a [128x64 pixels OLED display](htt
 
 # Software
 ## Basic Principle
-To carry out the calibration, a program is first uploaded to the target ATtiny using the integrated High Voltage Serial Programmer. In addition, the factory oscillator calibration value (OSCCAL) is written to the EEPROM. The program on the target ATtiny reads the EEPROM and writes the value to the OSCCAL register. Then it applies an oscillating signal with half the clock frequency to pin PB0. Since the fuses were previously set so that the target ATtiny runs with a prescaler of 8, a signal with 1/16 of the oscillator frequency is applied to PB0.
+To carry out the calibration, a program is first uploaded to the target ATtiny using the integrated High-Voltage Serial Programmer. In addition, the factory oscillator calibration value (OSCCAL) is written to the EEPROM. The program on the target ATtiny reads the EEPROM and writes the value to the OSCCAL register. Then it applies an oscillating signal with half the clock frequency to pin PB0. Since the fuses were previously set so that the target ATtiny runs with a prescaler of 8, a signal with 1/16 of the oscillator frequency is applied to PB0.
 
 ```c
 #include <avr/io.h>
@@ -37,8 +38,8 @@ This frequency is measured by the TinyCalibrator and compared with the target va
 
 ![calibrating.png](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_calibrating.png)
 
-## High Voltage Serial Programmer
-The code for the High Voltage Serial Programmer (HVSP) is quite unspectacular. Simply put, for each action, a series of instructions are sent over the data lines to the target ATtiny and the corresponding response is read. The process and the instructions are well described in the data sheet.
+## High-Voltage Serial Programmer
+The code for the High-Voltage Serial Programmer (HVSP) is quite unspectacular. Simply put, for each action, a series of instructions are sent over the data lines to the target ATtiny and the corresponding response is read. The process and the instructions are well described in the data sheet.
 
 ![hvsp.png](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_hvsp.png)
 
