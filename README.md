@@ -106,8 +106,9 @@ OSCCAL = 0x66;
 # References, Links and Notes
 1. [TinyHVSP](https://github.com/wagiminator/ATtiny84-TinyHVSP)
 2. [I²C OLED Tutorial](https://github.com/wagiminator/attiny13-tinyoleddemo)
-3. [ATtiny84 Datasheet](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf)
-4. [ATtiny85 Datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
-5. [ATtiny13A Datasheet](http://ww1.microchip.com/downloads/en/DeviceDoc/doc8126.pdf)
+3. [Nerd Ralph's PiggyFuse](https://nerdralph.blogspot.com/2018/05/piggyfuse-hvsp-avr-fuse-programmer.html)
+4. [ATtiny84 Datasheet](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf)
+5. [ATtiny85 Datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
+6. [ATtiny13A Datasheet](http://ww1.microchip.com/downloads/en/DeviceDoc/doc8126.pdf)
 
 ![pic5.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic5.jpg)
