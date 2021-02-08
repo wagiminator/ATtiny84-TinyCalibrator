@@ -70,7 +70,7 @@ The I²C protocol implementation is based on a crude bitbanging method. It was s
 - Navigate to the folder with the hex-file.
 - Execute the following command (if necessary replace "usbasp" with the programmer you use):
   ```
-  avrdude -c usbasp -p t84 -U lfuse:w:0xff:m -U hfuse:w:0xd5:m -U efuse:w:0xff:m -U flash:w:main.hex
+  avrdude -c usbasp -p t84 -U lfuse:w:0xff:m -U hfuse:w:0xd5:m -U efuse:w:0xff:m -U flash:w:tinycalibrator.hex
   ```
 
 ### If using the makefile (Linux/Mac)
@@ -78,7 +78,7 @@ The I²C protocol implementation is based on a crude bitbanging method. It was s
 - Connect your programmer to your PC and to the ICSP header of the device.
 - Open the makefile and change the programmer if you are not using usbasp.
 - Open a terminal.
-- Navigate to the folder with the makefile and main.c.
+- Navigate to the folder with the makefile and the Arduino sketch.
 - Run "make install" to compile, burn the fuses and upload the firmware.
 
 # Operating Instructions
