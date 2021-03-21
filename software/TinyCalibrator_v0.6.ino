@@ -233,10 +233,7 @@ void OLED_printChar(char c) {
 void OLED_printStr(const char* p) {
   I2C_start(OLED_ADDR);                   // start transmission to OLED
   I2C_write(OLED_DAT_MODE);               // set data mode
-  while (*p) {                            // repeat until string terminator
-    OLED_printChar(*p);                   // print character on OLED
-    p++;                                  // read next character
-  }
+  while (*p) OLED_printChar(*p++);        // print string
   I2C_stop();                             // stop transmission
 }
 
