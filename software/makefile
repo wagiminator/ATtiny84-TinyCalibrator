@@ -7,7 +7,7 @@
 # Type "make help" in the command line.
 
 # Input and Output File Names
-SKETCH  = TinyCalibrator_v0.6.ino
+SKETCH  = TinyCalibrator_v0.7.ino
 TARGET  = tinycalibrator
 
 # Microcontroller Options
