@@ -17,12 +17,21 @@
 // of the target ATtiny. Since the fuses were previously set so that the
 // target ATtiny runs with a prescaler of 8, a signal with 1/16 of the
 // oscillator frequency is applied to its PB0. This frequency is measured
-// by the timers of the ATtiny84 and compared with the target value. The
-// oscillator calibration value (OSCCAL) is then adjusted accordingly and
-// written into the EEPROM of the target ATtiny. This value is in turn read
-// by the target ATtiny and written to its OSCCAL register. This process is
-// repeated until the OSCCAL value, which leads to the lowest frequency
+// by the timers of the ATtiny24/44/84 and compared with the target value.
+// The oscillator calibration value (OSCCAL) is then adjusted accordingly
+// and written into the EEPROM of the target ATtiny. This value is in turn
+// read by the target ATtiny and written to its OSCCAL register. This process
+// is repeated until the OSCCAL value, which leads to the lowest frequency
 // deviation, has been found.
+//
+// Core:          ATtinyCore (https://github.com/SpenceKonde/ATTinyCore)
+// Board:         ATtiny24/44/84(a) (No bootloader)
+// Chip:          ATtiny44(a) or ATtiny84(a)
+// Clock:         12 MHz (external)
+// Millis/Micros: disabled
+// Leave the rest on default settings. Don't forget to "Burn bootloader"!
+// No Arduino core functions or libraries are used. Use the makefile if 
+// you want to compile without Arduino IDE.
 //
 // The high-voltage serial programmer implementation is based on TinyHVSP
 // https://github.com/wagiminator/ATtiny84-TinyHVSP
@@ -35,12 +44,6 @@
 //
 // A big thank you to Ralph Doncaster (nerdralph) for his optimization tips.
 // https://nerdralph.blogspot.com/ , https://github.com/nerdralph
-//
-// Core:          ATtinyCore (https://github.com/SpenceKonde/ATTinyCore)
-// Board:         ATtiny24/44/84(a) (No bootloader)
-// Chip:          ATtiny44(a) or ATtiny84(a)
-// Clock:         12 MHz (external)
-// Millis/Micros: disabled
 //
 // 2020 by Stefan Wagner 
 // Project Files (EasyEDA): https://easyeda.com/wagiminator
