@@ -17,12 +17,22 @@
 // of the target ATtiny. Since the fuses were previously set so that the
 // target ATtiny runs with a prescaler of 8, a signal with 1/16 of the
 // oscillator frequency is applied to its PB0. This frequency is measured
-// by the timers of the ATtiny24/44/84 and compared with the target value.
+// by the timers of the ATtiny84 and compared with the target value.
 // The oscillator calibration value (OSCCAL) is then adjusted accordingly
 // and written into the EEPROM of the target ATtiny. This value is in turn
 // read by the target ATtiny and written to its OSCCAL register. This process
 // is repeated until the OSCCAL value, which leads to the lowest frequency
 // deviation, has been found.
+//
+//                              +-\/-+
+//                        Vcc  1|°   |14  GND
+// 12M CRYSTAL ---- (D10) PB0  2|    |13  PA0 (D0) --- TGT SCI + Buttons
+// 12M CRYSTAL ---- (D9)  PB1  3|    |12  PA1 (D1) --- TGT SDO
+// RESET ---------- (D11) PB3  4|    |11  PA2 (D2) --- TGT SII
+// TGT Vcc -------- (D8)  PB2  5|    |10  PA3 (D3) --- TGT SDI
+// TGT RST 12V ---- (D7)  PA7  6|    |9   PA4 (D4) --- I2C SCK OLED
+// I2C SDA OLED --- (D6)  PA6  7|    |8   PA5 (D5) --- TGT RST 0V
+//                              +----+
 //
 // Core:          ATtinyCore (https://github.com/SpenceKonde/ATTinyCore)
 // Board:         ATtiny24/44/84(a) (No bootloader)
