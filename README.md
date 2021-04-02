@@ -2,14 +2,14 @@
 Because the 8-pin ATtinys only have a few GPIO pins available, they are usually operated without an external clock. The internal oscillator does a good job in most applications, but when it comes to precise timing, its +/-10% accuracy is often insufficient. Fortunately, the oscillator can be calibrated, increasing its accuracy to +/-2% or better. There are a few ways to perform this manual calibration, but several steps are required. The TinyCalibrator does this fully automatically by a push of a button. In order to make the device more versatile, a high-voltage fuse resetter was also integrated, with which "bricked" ATtinys can be reset to the factory state.
 
 - Project Video (YouTube): https://youtu.be/PQvtNVte2JE
-- Project Files (EasyEDA): https://easyeda.com/wagiminator/attiny84-tinycalibrator
+- Design Files (EasyEDA): https://easyeda.com/wagiminator/attiny84-tinycalibrator
 
 ![pic2.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic2.jpg)
 
 # Hardware
 The TinyCalibrator is supplied with 5V via a [Micro USB connector](https://aliexpress.com/wholesale?SearchText=micro+usb+2pin+dip). Since the frequency of the oscillator depends on the supply voltage of the ATtiny, an [HT7333](https://datasheet.lcsc.com/szlcsc/Holtek-Semicon-HT7333-A_C21583.pdf) voltage regulator was integrated. A switch can then be used to choose whether the oscillator should be calibrated for 3.3V or 5V.
 
-The [ATtiny84](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf) was chosen as the microcontroller for the TinyCalibrator because it has exactly the necessary number of GPIO pins. For accurate frequency measurements, the ATtiny84 is operated with an external 12 MHz crystal. Since the current software version only requires about 3.7 kByte, an ATtiny44 can also be used.
+The [ATtiny84](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf) was chosen as the microcontroller for the TinyCalibrator because it has exactly the necessary number of GPIO pins. For accurate frequency measurements, the ATtiny84 is operated with an external 12 MHz crystal. Since the current software version only requires about 3.7 KByte, an ATtiny44 can also be used.
 
 To generate the 12V for the High-Voltage Serial Programmer, an [ST662A](https://datasheet.lcsc.com/szlcsc/2004081608_STMicroelectronics-ST662ACD-TR_C500661.pdf) charge pump IC was chosen, which was specially designed for such applications and needs only a few external components. The 12V is controlled by a MOSFET and applied to the RESET pin of the target ATtiny if necessary. The remaining programming lines to the target are protected against a short circuit with resistors.
 
@@ -107,9 +107,11 @@ OSCCAL = 0x66;
 1. [TinyHVSP](https://github.com/wagiminator/ATtiny84-TinyHVSP)
 2. [I²C OLED Tutorial](https://github.com/wagiminator/attiny13-tinyoleddemo)
 3. [Nerd Ralph's PiggyFuse](https://nerdralph.blogspot.com/2018/05/piggyfuse-hvsp-avr-fuse-programmer.html)
-4. [ATtiny84 Datasheet](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf)
-5. [ATtiny85 Datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
-6. [ATtiny13A Datasheet](http://ww1.microchip.com/downloads/en/DeviceDoc/doc8126.pdf)
+4. [Oscillator Calibration Sketch for ATtiny13](https://github.com/MCUdude/MicroCore#internal-oscillator-calibration)
+5. [Oscillator Calibration Sketch for ATtiny25/45/85](http://ernstc.dk/arduino/tinytuner.html)
+6. [ATtiny84 Datasheet](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf)
+7. [ATtiny85 Datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
+8. [ATtiny13A Datasheet](http://ww1.microchip.com/downloads/en/DeviceDoc/doc8126.pdf)
 
 ![pic5.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic5.jpg)
 
