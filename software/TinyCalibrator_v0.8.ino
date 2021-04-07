@@ -143,6 +143,15 @@ void I2C_stop(void) {
 #define OLED_DAT_MODE   0x40              // set data mode
 #define OLED_INIT_LEN   9                 // length of init command array
 
+// OLED init settings
+const uint8_t OLED_INIT_CMD[] PROGMEM = {
+  0xC8, 0xA1,   // flip screen
+  0xA8, 0x1F,   // set multiplex ratio
+  0xDA, 0x02,   // set com pins hardware configuration
+  0x8D, 0x14,   // set DC-DC enable
+  0xAF          // display on
+};
+
 // OLED 5x8 pixels character set
 const uint8_t OLED_FONT[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2F, 0x00, 0x00, 0x00, 0x07, 0x00, 0x07, 0x00,
@@ -177,15 +186,6 @@ const uint8_t OLED_FONT[] PROGMEM = {
   0x3C, 0x40, 0x30, 0x40, 0x3C, 0x44, 0x28, 0x10, 0x28, 0x44, 0x1C, 0xA0, 0xA0, 0xA0, 0x7C,
   0x44, 0x64, 0x54, 0x4C, 0x44, 0x08, 0x36, 0x41, 0x41, 0x00, 0x00, 0x00, 0x7F, 0x00, 0x00,
   0x00, 0x41, 0x41, 0x36, 0x08, 0x08, 0x04, 0x08, 0x10, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-};
-
-// OLED init settings
-const uint8_t OLED_INIT_CMD[] PROGMEM = {
-  0xC8, 0xA1,   // flip screen
-  0xA8, 0x1F,   // set multiplex ratio
-  0xDA, 0x02,   // set com pins hardware configuration
-  0x8D, 0x14,   // set DC-DC enable
-  0xAF          // display on
 };
 
 // OLED variables
@@ -242,14 +242,6 @@ void OLED_printChar(char c) {
   }
 }
 
-// OLED print a string
-void OLED_printStr(const char* p) {
-  I2C_start(OLED_ADDR);                   // start transmission to OLED
-  I2C_write(OLED_DAT_MODE);               // set data mode
-  while (*p) OLED_printChar(*p++);        // print string
-  I2C_stop();                             // stop transmission
-}
-
 // OLED print a string from program memory
 void OLED_printPrg(const char* p) {
   I2C_start(OLED_ADDR);                   // start transmission to OLED
@@ -264,10 +256,8 @@ void OLED_printPrg(const char* p) {
 
 // OLED convert byte nibble into hex character and prints it
 void OLED_printNibble(uint8_t nibble) {
-  char c;
-  if (nibble <= 9)  c = '0' + nibble;
-  else              c = 'A' + nibble - 10;
-  OLED_printChar(c);
+  (nibble <= 9) ? (nibble += '0') : (nibble += ('A' - 10));
+  OLED_printChar(nibble);
 }
 
 // OLED print byte as hex
@@ -279,18 +269,21 @@ void OLED_printHex(uint8_t value) {
   I2C_stop();                             // stop transmission
 }
 
+// OLED BCD conversion array
+const uint16_t DIVIDER[] PROGMEM = {10000, 1000, 100, 10, 1};
+
 // OLED print 16-bit value as decimal (BCD conversion by substraction method)
 void OLED_printDec(uint16_t value) {
-  static uint16_t divider[5] = {10000, 1000, 100, 10, 1};  // for BCD conversion
   uint8_t leadflag = 0;
   I2C_start(OLED_ADDR);                         // start transmission to OLED
   I2C_write(OLED_DAT_MODE);                     // set data mode
   for(uint8_t digit = 0; digit < 5; digit++) {  // 5 digits
     uint8_t digitval = 0;                       // start with digit value 0
-    while (value >= divider[digit]) {           // if current divider fits into the value
+    uint16_t divider = pgm_read_word(&DIVIDER[digit]);  // current divider
+    while (value >= divider) {                  // if current divider fits into the value
       leadflag = 1;                             // end of leading spaces
       digitval++;                               // increase digit value
-      value -= divider[digit];                  // decrease value by divider
+      value -= divider;                         // decrease value by divider
     }
     if (leadflag || (digit == 4)) OLED_printChar('0' + digitval);   // print the digit
     else OLED_printChar(' ');                   // print leading space
@@ -410,7 +403,7 @@ uint8_t HVSP_sendInstr(uint8_t SDI_BYTE, uint8_t SII_BYTE) {
   // send start bit (SDI/SII = '0')
   HVSP_SDI_LOW();                     // SDI = '0'
   HVSP_SII_LOW();                     // SII = '0'
-  HVSP_CLOCKOUT();                    // SCI HIGH, SCI LOW
+  HVSP_CLOCKOUT();                    // clock out start bit
 
   // send instruction bytes, MSB first; receive reply
   for(uint8_t i=8; i; i--) {
@@ -426,8 +419,8 @@ uint8_t HVSP_sendInstr(uint8_t SDI_BYTE, uint8_t SII_BYTE) {
   // send end bits (two times SDI/SII = '0')
   HVSP_SDI_LOW();                     // SDI = '0'
   HVSP_SII_LOW();                     // SII = '0'
-  HVSP_CLOCKOUT();                    // SCI HIGH, SCI LOW
-  HVSP_CLOCKOUT();                    // SCI HIGH, SCI LOW
+  HVSP_CLOCKOUT();                    // clock out end bit 1
+  HVSP_CLOCKOUT();                    // clock out end bit 2
         
   return SDO_BYTE;                    // return read SDO byte
 }
@@ -579,8 +572,9 @@ void HVSP_writeFlash(const uint8_t* p, uint16_t length) {
 // -----------------------------------------------------------------------------
 
 // Target power macros
-#define TGT_VCC_ON()    {DDRB |= (1<<VCC_PIN); PORTB |= (1<<VCC_PIN); _delay_ms(100);}
-#define TGT_VCC_OFF()   {PORTB &= ~(1<<VCC_PIN); DDRB &= ~(1<<VCC_PIN); _delay_ms(30);}
+#define TGT_VCC_ON()    {DDRB |= (1<<VCC_PIN); PORTB |= (1<<VCC_PIN); _delay_ms(128);}
+#define TGT_VCC_OFF()   {PORTB &= ~(1<<VCC_PIN); DDRB &= ~(1<<VCC_PIN);}
+#define FRQ_TOP         (F_CPU / 250) - 1   // 250 = 8 [prescaler] * (1000 / 32) [1/32ms]
 
 // Global variables for frequency measurement
 volatile uint8_t FRQ_highByte;      // high byte of virtual 16-bit timer0
@@ -588,7 +582,7 @@ volatile uint8_t FRQ_busy;          // sampling in progress flag
 
 // Init frequency measurement
 void FRQ_init(void) {
-  OCR1A  = 48192;                   // timer1 compare match A after 32 ms
+  OCR1A  = FRQ_TOP;                 // timer1 compare match A after 32 ms
   TIMSK0 = (1<<TOIE0);              // enable timer0 overflow interrupt
   TIMSK1 = (1<<OCIE1A);             // enable timer1 compare match A interrupt
   sei();                            // enable global interrupts
@@ -622,33 +616,13 @@ ISR(TIM1_COMPA_vect) {
 }
 
 // -----------------------------------------------------------------------------
-// Additional Functions
+// ADC and Button Functions
 // -----------------------------------------------------------------------------
 
-// Text strings stored in program memory
-const char TitleScreen[]  PROGMEM = 
-  "Tiny Calibrator v0.7 "
-  "Insert  ATtiny  into "
-  "the socket and press "
-  "any key to continue. ";
-const char SelectScreen[] PROGMEM =
-  "(1) Calibrate OSC    "
-  "(2) Reset Fuses      "
-  "(3) Exit             ";
-const char ErrorScreen[]  PROGMEM = 
-  "Check correct place- "
-  "ment of the chip and "
-  "press a key to retry.";
-
-const char ExitKeyStr[] PROGMEM =       "Press any key to exit";
-const char CalibKeyStr[] PROGMEM =      "Press key to calibr. ";
-const char ResetKeyStr[] PROGMEM =      "Press a key to reset ";
-const char CurrentFuseStr[] PROGMEM =   "Current fuse settings";
-const char CurrentCalibStr[] PROGMEM =  "Current OSC settings ";
-const char CalibratingStr[] PROGMEM =   "Calibrating .........";
-const char PleaseWaitStr[] PROGMEM =    "....... please wait !";
-const char FrequencyStr[] PROGMEM =     "Freq (kHz):     ";
-const char OsccalStr[] PROGMEM =        "OSCCAL value:    0x";
+// Setup ADC with prescaler 64
+void ADC_init(void) {
+  ADCSRA = (1<<ADEN) | (1<<ADPS2) | (1<<ADPS1);
+}
 
 // Read supply voltage in mV
 uint16_t readVCC(void) {
@@ -657,7 +631,7 @@ uint16_t readVCC(void) {
   ADCSRA |= (1<<ADSC);              // start conversion
   while(ADCSRA & (1<<ADSC));        // wait for ADC conversion complete
   uint16_t vcc = ADC;               // get result
-  vcc = 1125300L / vcc;             // calculate Vcc in mV; 1125300 = 1.1*1023*1000
+  vcc = 1125300UL / vcc;            // calculate Vcc in mV; 1125300 = 1.1*1023*1000
   return vcc;                       // return VCC in mV
 }
 
@@ -680,15 +654,17 @@ void TGT_RESET_OFF(void) {
   _delay_ms(30);                    // delay 30ms
 }
 
+// Button ADC thresholds
+const uint16_t THRESHOLDS[] PROGMEM = {896, 726, 597, 0};
+
 // Read button number; return 0 if no button is pressed
 uint8_t readButton(void) {
-  static uint16_t THRESHOLD[] = {896, 726, 597, 0};
   ADMUX   = BUTTONS;                // set buttons pin against Vcc
   ADCSRA |= (1<<ADSC);              // start conversion
   while(ADCSRA & (1<<ADSC));        // wait for ADC conversion complete
   uint16_t rawbutton = ADC;         // get result
-  uint8_t button = 0;               // button number
-  while (rawbutton < THRESHOLD[button]) button++; // figure out button number
+  uint8_t button = 0;               // figure out button number ...
+  while (rawbutton < pgm_read_word(&THRESHOLDS[button])) button++;
   return (button);                  // return button number
 }
 
@@ -704,6 +680,21 @@ uint8_t waitButton(void) {
   TGT_RESET_OFF();                  // target off
   return (button);
 }
+
+// -----------------------------------------------------------------------------
+// Calibration Functions
+// -----------------------------------------------------------------------------
+
+// Text strings stored in program memory
+const char ExitKeyStr[] PROGMEM =       "Press any key to exit";
+const char CalibKeyStr[] PROGMEM =      "Press key to calibr. ";
+const char ResetKeyStr[] PROGMEM =      "Press a key to reset ";
+const char CurrentFuseStr[] PROGMEM =   "Current fuse settings";
+const char CurrentCalibStr[] PROGMEM =  "Current OSC settings ";
+const char CalibratingStr[] PROGMEM =   "Calibrating .........";
+const char PleaseWaitStr[] PROGMEM =    "....... please wait !";
+const char FrequencyStr[] PROGMEM =     "Freq (kHz):     ";
+const char OsccalStr[] PROGMEM =        "OSCCAL value:    0x";
 
 // Calculate difference
 uint16_t diff(uint16_t a, uint16_t b) {
@@ -758,14 +749,12 @@ void TGT_calibrate(void) {
     // calculate next OSCCAL value
     lastcalib = calib;
     difference = diff(frequency, targetfreq);
+    if (difference == 0) break;
     if (frequency > targetfreq) calib--;
     else calib++;
 
     // program target for next calibration value
     HVSP_enterProgMode();
-    HVSP_eraseChip();
-    if(target == TGT_T13) HVSP_writeFlash(PROG_T13, PROG_T13_LENGTH);
-    else                  HVSP_writeFlash(PROG_Tx5, PROG_Tx5_LENGTH);
     HVSP_writeEEPROM(0, calib);
     HVSP_exitProgMode();
 
@@ -775,7 +764,6 @@ void TGT_calibrate(void) {
 
   // write final calibrated OSCCAL value to EEPROM
   HVSP_enterProgMode();
-  HVSP_eraseChip();
   HVSP_writeEEPROM(0, lastcalib);
   HVSP_exitProgMode();
 
@@ -784,6 +772,10 @@ void TGT_calibrate(void) {
   OLED_setCursor(0,3);  OLED_printPrg(ExitKeyStr);
   waitButton();
 }
+
+// -----------------------------------------------------------------------------
+// Fuse Resetter Functions
+// -----------------------------------------------------------------------------
 
 // Read and print current fuse settings on the OLED
 void OLED_printFuses(void) {
@@ -828,9 +820,25 @@ void TGT_resetFuses(void) {
 // Main Function
 // -----------------------------------------------------------------------------
 
+// Text strings stored in program memory
+const char TitleScreen[]  PROGMEM = 
+  "Tiny Calibrator v0.8 "
+  "Insert  ATtiny  into "
+  "the socket and press "
+  "any key to continue. ";
+const char SelectScreen[] PROGMEM =
+  "(1) Calibrate OSC    "
+  "(2) Reset Fuses      "
+  "(3) Exit             ";
+const char ErrorScreen[]  PROGMEM = 
+  "Check correct place- "
+  "ment of the chip and "
+  "press a key to retry.";
+
+// Main Function
 int main(void) {
   // setup
-  ADCSRA = (1<<ADEN) | (1<<ADPS2) | (1<<ADPS1);  // setup ADC, prescaler 64
+  ADC_init();                       // setup ADC
   FRQ_init();                       // setup timers for frequency measurements
   OLED_init();                      // setup I2C OLED
 

@@ -7,7 +7,7 @@
 # Type "make help" in the command line.
 
 # Input and Output File Names
-SKETCH  = TinyCalibrator_v0.7.ino
+SKETCH  = TinyCalibrator_v0.8.ino
 TARGET  = tinycalibrator
 
 # Microcontroller Options
@@ -20,7 +20,7 @@ EFUSE   = 0xff
 
 # Commands
 AVRDUDE = avrdude -c $(PROGRMR) -p $(DEVICE)
-COMPILE = avr-gcc -Wall -Os -flto -mmcu=$(DEVICE) -DF_CPU=$(CLOCK) -x c++ $(SKETCH)
+COMPILE = avr-gcc -Wall -Os -flto -mmcu=$(DEVICE) -DF_CPU=$(CLOCK)UL -x c++ $(SKETCH)
 CLEAN   = rm -f *.lst *.obj *.cof *.list *.map *.eep.hex *.o *.s
 
 # Symbolic Targets
