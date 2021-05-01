@@ -1,12 +1,10 @@
 # TinyCalibrator - OSC Calibrator and High-Voltage Fuse Resetter
-Because the 8-pin ATtinys only have a few GPIO pins available, they are usually operated without an external clock. The internal oscillator does a good job in most applications, but when it comes to precise timing, its +/-10% accuracy is often insufficient. Fortunately, the oscillator can be calibrated, increasing its accuracy to +/-2% or better. There are a few ways to perform this manual calibration, but several steps are required. The TinyCalibrator does this fully automatically by a push of a button. In order to make the device more versatile, a high-voltage fuse resetter was also integrated, with which "bricked" ATtinys can be reset to the factory state.
+Because the 8-pin ATtinys only have a few GPIO pins available, they are usually operated without an external clock. The internal oscillator does a good job in most applications, but when it comes to precise timing, its +/-10% accuracy is often insufficient. Fortunately, the oscillator can be calibrated, increasing its accuracy to +/-2% or better. There are a few ways to perform this manual calibration, but several steps are required. The TinyCalibrator does this fully automatically by a push of a button. In order to make the device more versatile, a high-voltage fuse resetter was also integrated, with which "bricked" ATtinys can be reset to the factory state. For an in-circuit oscillator calibrator take a look at [TinyICOC](https://github.com/wagiminator/ATtiny84-TinyICOC).
 
 - Project Video (YouTube): https://youtu.be/PQvtNVte2JE
 - Design Files (EasyEDA): https://easyeda.com/wagiminator/attiny84-tinycalibrator
 
 ![pic2.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic2.jpg)
-
-For an in-circuit oscillator calibrator take a look at [TinyICOC](https://github.com/wagiminator/ATtiny84-TinyICOC).
 
 # Hardware
 The TinyCalibrator is supplied with 5V via a [Micro USB connector](https://aliexpress.com/wholesale?SearchText=micro+usb+2pin+dip). Since the frequency of the oscillator depends on the supply voltage of the ATtiny, an [HT7333](https://datasheet.lcsc.com/szlcsc/Holtek-Semicon-HT7333-A_C21583.pdf) voltage regulator was integrated. A switch can then be used to choose whether the oscillator should be calibrated for 3.3V or 5V.
