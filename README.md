@@ -6,6 +6,8 @@ Because the 8-pin ATtinys only have a few GPIO pins available, they are usually 
 
 ![pic2.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic2.jpg)
 
+For an in-circuit oscillator calibrator take a look at [TinyICOC](https://github.com/wagiminator/ATtiny84-TinyICOC).
+
 # Hardware
 The TinyCalibrator is supplied with 5V via a [Micro USB connector](https://aliexpress.com/wholesale?SearchText=micro+usb+2pin+dip). Since the frequency of the oscillator depends on the supply voltage of the ATtiny, an [HT7333](https://datasheet.lcsc.com/szlcsc/Holtek-Semicon-HT7333-A_C21583.pdf) voltage regulator was integrated. A switch can then be used to choose whether the oscillator should be calibrated for 3.3V or 5V.
 
@@ -105,13 +107,14 @@ OSCCAL = 0x66;
 
 # References, Links and Notes
 1. [TinyHVSP](https://github.com/wagiminator/ATtiny84-TinyHVSP)
-2. [I²C OLED Tutorial](https://github.com/wagiminator/attiny13-tinyoleddemo)
-3. [Nerd Ralph's PiggyFuse](https://nerdralph.blogspot.com/2018/05/piggyfuse-hvsp-avr-fuse-programmer.html)
-4. [Oscillator Calibration Sketch for ATtiny13](https://github.com/MCUdude/MicroCore#internal-oscillator-calibration)
-5. [Oscillator Calibration Sketch for ATtiny25/45/85](http://ernstc.dk/arduino/tinytuner.html)
-6. [ATtiny84 Datasheet](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf)
-7. [ATtiny85 Datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
-8. [ATtiny13A Datasheet](http://ww1.microchip.com/downloads/en/DeviceDoc/doc8126.pdf)
+2. [TinyICOC](https://github.com/wagiminator/ATtiny84-TinyICOC)
+3. [I²C OLED Tutorial](https://github.com/wagiminator/attiny13-tinyoleddemo)
+4. [Ralph Doncaster's PiggyFuse](https://nerdralph.blogspot.com/2018/05/piggyfuse-hvsp-avr-fuse-programmer.html)
+5. [Oscillator Calibration Sketch for ATtiny13](https://github.com/MCUdude/MicroCore#internal-oscillator-calibration)
+6. [Oscillator Calibration Sketch for ATtiny25/45/85](http://ernstc.dk/arduino/tinytuner.html)
+7. [ATtiny84 Datasheet](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf)
+8. [ATtiny85 Datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-2586-AVR-8-bit-Microcontroller-ATtiny25-ATtiny45-ATtiny85_Datasheet.pdf)
+9. [ATtiny13A Datasheet](http://ww1.microchip.com/downloads/en/DeviceDoc/doc8126.pdf)
 
 ![pic5.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyCalibrator/main/documentation/TinyCalibrator_pic5.jpg)
 
