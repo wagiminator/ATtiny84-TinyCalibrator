@@ -413,18 +413,18 @@ void HVSP_exitProgMode(void) {
 uint8_t HVSP_sendInstr(uint8_t SDI_BYTE, uint8_t SII_BYTE) {
   uint8_t SDO_BYTE = 0;               // received byte from target
 
-  // wait until SDO_PIN goes high (target ready) or 10ms time-out
+  // Wait until SDO_PIN goes high (target ready) or 10ms time-out
   for(uint8_t i=10; i; i--) {         // 10 x 1ms
     if(HVSP_SDO_BIT) break;           // check SDO line
     _delay_ms(1);                     // delay 1ms
   }
        
-  // send start bit (SDI/SII = '0')
+  // Send start bit (SDI/SII = '0')
   HVSP_SDI_LOW();                     // SDI = '0'
   HVSP_SII_LOW();                     // SII = '0'
   HVSP_CLOCKOUT();                    // clock out start bit
 
-  // send instruction bytes, MSB first; receive reply
+  // Send instruction bytes, MSB first; receive reply
   for(uint8_t i=8; i; i--) {
     (SDI_BYTE & 0x80) ? (HVSP_SDI_HIGH()) : (HVSP_SDI_LOW());
     (SII_BYTE & 0x80) ? (HVSP_SII_HIGH()) : (HVSP_SII_LOW());
@@ -435,7 +435,7 @@ uint8_t HVSP_sendInstr(uint8_t SDI_BYTE, uint8_t SII_BYTE) {
     HVSP_CLOCKOUT();
   }
       
-  // send end bits (two times SDI/SII = '0')
+  // Send end bits (two times SDI/SII = '0')
   HVSP_SDI_LOW();                     // SDI = '0'
   HVSP_SII_LOW();                     // SII = '0'
   HVSP_CLOCKOUT();                    // clock out end bit 1
@@ -456,7 +456,7 @@ void HVSP_readSignature(void) {
   HVSP_sendInstr(0x00, 0x68);             // Instr3: signature, not calibration
   signature |= HVSP_sendInstr(0x00, 0x6C);// Instr4: read the signature byte
 
-  // set variables according to the signature
+  // Set variables according to the signature
   switch(signature) {
     case T13_SIG: target   = TGT_T13;   outLFUSE = T13_LFUSE;
                   outHFUSE = T13_HFUSE; break;
@@ -559,14 +559,14 @@ void HVSP_writeFlash(const uint8_t* p, uint16_t length) {
   HVSP_sendInstr(0x10, 0x4C);             // command to enter flash programming mode
   
   do {
-    // load flash page
+    // Load flash page
     HVSP_sendInstr(addr, 0x0C);                   // Instr1: address low byte
     HVSP_sendInstr(pgm_read_byte(p++), 0x2C);     // Instr2: data low byte
     HVSP_sendInstr(pgm_read_byte(p++), 0x3C);     // Instr3: data high byte
     HVSP_sendInstr(0x00, 0x7D);                   // Instr4
     HVSP_sendInstr(0x00, 0x7C);                   // Instr5
 
-    // flush page if it's full
+    // Flush page if it's full
     if((++addr & (pagesize - 1)) == 0) {          // page full?
       HVSP_sendInstr((addr-pagesize) >> 8, 0x1C); // Instr1: address high byte
       HVSP_sendInstr(0x00, 0x64);                 // Instr2
@@ -575,7 +575,7 @@ void HVSP_writeFlash(const uint8_t* p, uint16_t length) {
     }
   } while(--length);
 
-  // flush last page if it's not full (not flushed yet)
+  // Flush last page if it's not full (not flushed yet)
   if(addr & (pagesize - 1)) {
     HVSP_sendInstr(addr >> 8, 0x1C);              // Instr1: address high byte
     HVSP_sendInstr(0x00, 0x64);                   // Instr2
@@ -723,10 +723,10 @@ uint16_t diff(uint16_t a, uint16_t b) {
 
 // Calibrate oscillator of target device
 void TGT_calibrate(void) {
-  // print heading
+  // Print heading
   OLED_setCursor(0,0); OLED_printPrg(CurrentCalibStr);
 
-  // read calibration byte, set fuses, upload code, write OSCCAL value to EEPROM
+  // Read calibration byte, set fuses, upload code, write OSCCAL value to EEPROM
   HVSP_enterProgMode();
   HVSP_readSignature();
   HVSP_readCalib();
@@ -737,35 +737,35 @@ void TGT_calibrate(void) {
   HVSP_writeEEPROM(0, inCALIB0);
   HVSP_exitProgMode();
 
-  // measure and print uncalibrated frequency
+  // Measure and print uncalibrated frequency
   FRQ_measure();
   OLED_printPrg(OsccalStr); OLED_printHex(inCALIB0);
   OLED_printPrg(FrequencyStr); OLED_printDec(frequency);
   OLED_printPrg(CalibKeyStr);
   waitButton();
 
-  // print calibrating heading
+  // Print calibrating heading
   OLED_setCursor(0,0); OLED_printPrg(CalibratingStr);
   OLED_setCursor(0,3); OLED_printPrg(PleaseWaitStr);
 
-  // calibration process variables
+  // Calibration process variables
   uint8_t  calib      = inCALIB0;
   uint8_t  lastcalib  = calib;
   uint16_t difference = 65535;
   uint16_t targetfreq = 8000;
   if(target == TGT_T13) targetfreq = 9600;
 
-  // calibration process
+  // Calibration process
   while(1) {
-    // leave if current OSCCAL value is worse than the last one
+    // Leave if current OSCCAL value is worse than the last one
     if(diff(frequency, targetfreq) >= difference) break;
 
-    // print current calibration results
+    // Print current calibration results
     OLED_setCursor(0,1);
     OLED_printPrg(OsccalStr); OLED_printHex(calib);
     OLED_printPrg(FrequencyStr); OLED_printDec(frequency);
 
-    // calculate next OSCCAL value
+    // Calculate next OSCCAL value
     lastcalib = calib;
     difference = diff(frequency, targetfreq);
     if(difference == 0) break;
@@ -777,16 +777,16 @@ void TGT_calibrate(void) {
     HVSP_writeEEPROM(0, calib);
     HVSP_exitProgMode();
 
-    // measure frequency
+    // Measure frequency
     FRQ_measure();
   }
 
-  // write final calibrated OSCCAL value to EEPROM
+  // Write final calibrated OSCCAL value to EEPROM
   HVSP_enterProgMode();
   HVSP_writeEEPROM(0, lastcalib);
   HVSP_exitProgMode();
 
-  // print calibration finished
+  // Print calibration finished
   OLED_setCursor(96,0); OLED_printPrg(PSTR(" done"));
   OLED_setCursor(0,3);  OLED_printPrg(ExitKeyStr);
   waitButton();
@@ -798,12 +798,12 @@ void TGT_calibrate(void) {
 
 // Read and print current fuse settings on the OLED
 void OLED_printFuses(void) {
-  // read current fuse settings
+  // Read current fuse settings
   HVSP_enterProgMode();
   HVSP_readFuses();
   HVSP_exitProgMode();
 
-  // print current fuse settings
+  // Print current fuse settings
   OLED_setCursor(0,1); OLED_printPrg(CurrentFuseStr);
   OLED_printPrg(PSTR("l: ")); OLED_printHex(inLFUSE);
   OLED_printPrg(PSTR(" - h: ")); OLED_printHex(inHFUSE);
@@ -812,14 +812,14 @@ void OLED_printFuses(void) {
 
 // Reset fuses of target device
 void TGT_resetFuses(void) {
-  // print initial fuse settings
+  // Print initial fuse settings
   OLED_clearScreen();
   OLED_setCursor(0,0); OLED_printPrg(PSTR("HV Fuse Resetter"));
   OLED_printFuses();
   OLED_setCursor(0,3); OLED_printPrg(ResetKeyStr);
   waitButton();
 
-  // reset fuses
+  // Reset fuses
   HVSP_enterProgMode();
   HVSP_readSignature();
   HVSP_readLock();
@@ -828,7 +828,7 @@ void TGT_resetFuses(void) {
   HVSP_exitProgMode();
   _delay_ms(30);
 
-  // print final fuse settings
+  // Print final fuse settings
   OLED_setCursor(0,0); OLED_printPrg(PSTR("Resetting finished"));
   OLED_printFuses();
   OLED_setCursor(0,3); OLED_printPrg(ExitKeyStr);
@@ -841,7 +841,7 @@ void TGT_resetFuses(void) {
 
 // Text strings stored in program memory
 const char TitleScreen[]  PROGMEM = 
-  "Tiny Calibrator v0.8 "
+  "Tiny Calibrator v1.0 "
   "Insert  ATtiny  into "
   "the socket and press "
   "any key to continue. ";
@@ -856,20 +856,20 @@ const char ErrorScreen[]  PROGMEM =
 
 // Main Function
 int main(void) {
-  // setup
+  // Setup
   ADC_init();                       // setup ADC
   FRQ_init();                       // setup timers for frequency measurements
   OLED_init();                      // setup I2C OLED
 
-  // loop
+  // Loop
   while(1) {
-    // print title screen
+    // Print title screen
     OLED_clearScreen();
     OLED_setCursor(0,0);
     OLED_printPrg(TitleScreen);
     waitButton();
 
-    // detect target and read device information
+    // Detect target and read device information
     OLED_clearScreen();
     OLED_setCursor(0,0);
     OLED_printPrg(PSTR("Detecting ..."));
@@ -881,7 +881,7 @@ int main(void) {
       _delay_ms(100);
     }
 
-    // print detected device or ERROR
+    // Print detected device or ERROR
     OLED_setCursor(0,0);
     OLED_printPrg(PSTR("Detected: "));
     if(target == TGT_ERROR) {
@@ -901,10 +901,10 @@ int main(void) {
       default:        break;
     }
 
-    // print main menu
+    // Print main menu
     OLED_setCursor(0,1); OLED_printPrg(SelectScreen);
 
-    // read button and execute selected function
+    // Read button and execute selected function
     uint8_t button = waitButton();
     switch(button) {
       case 1:         TGT_calibrate(); break;
