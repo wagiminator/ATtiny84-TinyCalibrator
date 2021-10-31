@@ -1,13 +1,12 @@
 # Project:  tinyCalibrator
 # Author:   Stefan Wagner
 # Year:     2020
-# URL:      https://easyeda.com/wagiminator
-#           https://github.com/wagiminator
+# URL:      https://github.com/wagiminator    
 #
 # Type "make help" in the command line.
 
 # Input and Output File Names
-SKETCH  = TinyCalibrator_v0.8.ino
+SKETCH  = TinyCalibrator.ino
 TARGET  = tinycalibrator
 
 # Microcontroller Options

@@ -1,5 +1,15 @@
-// TinyCalibrator - OSC Calibrator and High-Voltage Fuse Resetter
+// ===================================================================================
+// Project:   TinyCalibrator - OSC Calibrator and High-Voltage Fuse Resetter
+// Version:   v1.0
+// Year:      2020
+// Author:    Stefan Wagner
+// Github:    https://github.com/wagiminator
+// EasyEDA:   https://easyeda.com/wagiminator
+// License:   http://creativecommons.org/licenses/by-sa/3.0/
+// ===================================================================================
 //
+// Description:
+// ------------
 // Because the ATtinys only have a few pins available, they are usually
 // operated without an external clock. The internal oscillator does a good
 // job in most applications, but when it comes to precise timing, it is
@@ -24,25 +34,8 @@
 // is repeated until the OSCCAL value, which leads to the lowest frequency
 // deviation, has been found.
 //
-//                              +-\/-+
-//                        Vcc  1|°   |14  GND
-// 12M CRYSTAL ---- (D10) PB0  2|    |13  PA0 (D0) --- TGT SCI + Buttons
-// 12M CRYSTAL ---- (D9)  PB1  3|    |12  PA1 (D1) --- TGT SDO
-// RESET ---------- (D11) PB3  4|    |11  PA2 (D2) --- TGT SII
-// TGT Vcc -------- (D8)  PB2  5|    |10  PA3 (D3) --- TGT SDI
-// TGT RST 12V ---- (D7)  PA7  6|    |9   PA4 (D4) --- I2C SCK OLED
-// I2C SDA OLED --- (D6)  PA6  7|    |8   PA5 (D5) --- TGT RST 0V
-//                              +----+
-//
-// Core:          ATtinyCore (https://github.com/SpenceKonde/ATTinyCore)
-// Board:         ATtiny24/44/84(a) (No bootloader)
-// Chip:          ATtiny44(a) or ATtiny84(a)
-// Clock:         12 MHz (external)
-// Millis/Micros: disabled
-// Leave the rest on default settings. Don't forget to "Burn bootloader"!
-// No Arduino core functions or libraries are used. Use the makefile if 
-// you want to compile without Arduino IDE.
-//
+// References:
+// -----------
 // The high-voltage serial programmer implementation is based on TinyHVSP
 // https://github.com/wagiminator/ATtiny84-TinyHVSP
 //
@@ -55,31 +48,57 @@
 // A big thank you to Ralph Doncaster (nerdralph) for his optimization tips.
 // https://nerdralph.blogspot.com/ , https://github.com/nerdralph
 //
-// 2020 by Stefan Wagner 
-// Project Files (EasyEDA): https://easyeda.com/wagiminator
-// Project Files (Github):  https://github.com/wagiminator
-// License: http://creativecommons.org/licenses/by-sa/3.0/
+// Wiring:
+// -------
+//                                  +-\/-+
+//                            Vcc  1|°   |14  GND
+//  12M CRYSTAL -------- XTAL PB0  2|    |13  PA0 ADC0 AREF --- TGT SCI + Buttons
+//  12M CRYSTAL -------- XTAL PB1  3|    |12  PA1 ADC1 AIN0 --- TGT SDO
+//        RESET -------- !RST PB3  4|    |11  PA2 ADC2 AIN1 --- TGT SII
+//      TGT Vcc -------- INT0 PB2  5|    |10  PA3 ADC3 T0 ----- TGT SDI
+//  TGT RST 12V -------- ADC7 PA7  6|    |9   PA4 ADC4 SCK ---- I2C SCK OLED
+// I2C SDA OLED --- MOSI ADC6 PA6  7|    |8   PA5 ADC5 MISO --- TGT RST 0V
+//                                  +----+
+//
+// Compilation Settings:
+// ---------------------
+// Core:      ATtinyCore (https://github.com/SpenceKonde/ATTinyCore)
+// Board:     ATtiny24/44/84(a) (No bootloader)
+// Chip:      ATtiny44(a) or ATtiny84(a)
+// Clock:     12 MHz (external)
+// Millis:    disabled
+// BOD:       2.7V
+//
+// Leave the rest on default settings. Don't forget to "Burn bootloader"!
+// No Arduino core functions or libraries are used. Use the makefile if 
+// you want to compile without Arduino IDE.
+//
+// Fuse settings: -U lfuse:w:0xff:m -U hfuse:w:0xd5:m -U efuse:w:0xff:m
 
+
+// ===================================================================================
+// Libraries and Definitions
+// ===================================================================================
 
 // Libraries
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <avr/pgmspace.h>
-#include <util/delay.h>
+#include <avr/io.h>         // for GPIO
+#include <avr/interrupt.h>  // for interrupts
+#include <avr/pgmspace.h>   // to store data in programm memory
+#include <util/delay.h>     // for delays
 
-// Pin assignments PORTA
-#define I2C_SCL   PA4     // I2C Serial Clock (SCK)
-#define I2C_SDA   PA6     // I2C Serial Data (SDA)
-#define SCI_PIN   PA0     // Serial Clock Input (SCI)         Pin 2 of target device
-#define SDO_PIN   PA1     // Serial Data Output (SDO)         Pin 7 of target device
-#define SII_PIN   PA2     // Serial Instruction Input (SII)   Pin 6 of target device
-#define SDI_PIN   PA3     // Serial Data Input (SDI)          Pin 5 of target device
-#define RST_PIN   PA5     // Low  Voltage RESET               Pin 1 of target device
-#define HVR_PIN   PA7     // High Voltage RESET               Pin 1 of target device
-#define BUTTONS   PA0     // Buttons
+// Pin definitions PORTA
+#define I2C_SCL   PA4       // I2C Serial Clock (SCK)
+#define I2C_SDA   PA6       // I2C Serial Data (SDA)
+#define SCI_PIN   PA0       // Serial Clock Input (SCI)       Pin 2 of target device
+#define SDO_PIN   PA1       // Serial Data Output (SDO)       Pin 7 of target device
+#define SII_PIN   PA2       // Serial Instruction Input (SII) Pin 6 of target device
+#define SDI_PIN   PA3       // Serial Data Input (SDI)        Pin 5 of target device
+#define RST_PIN   PA5       // Low  Voltage RESET             Pin 1 of target device
+#define HVR_PIN   PA7       // High Voltage RESET             Pin 1 of target device
+#define BUTTONS   PA0       // Buttons
 
-// Pin assignments PORTB
-#define VCC_PIN   PB2     // Target VCC                       Pin 8 of target device
+// Pin definitions PORTB
+#define VCC_PIN   PB2       // Target VCC                     Pin 8 of target device
 
 // Global variables
 uint8_t  inLFUSE, inHFUSE, inEFUSE;           // for reading fuses
@@ -90,9 +109,9 @@ uint8_t  target;                              // for target device
 uint16_t signature;                           // for reading signature
 uint16_t frequency;                           // for measures frequency in kHz
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // I2C Implementation
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // I2C macros
 #define I2C_SDA_HIGH()  DDRA &= ~(1<<I2C_SDA) // release SDA   -> pulled HIGH by resistor
@@ -133,9 +152,9 @@ void I2C_stop(void) {
   I2C_SDA_HIGH();                         // stop condition: SDA goes HIGH second
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // OLED Implementation
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // OLED definitions
 #define OLED_ADDR       0x78              // OLED write address
@@ -196,7 +215,7 @@ void OLED_init(void) {
   I2C_init();                             // initialize I2C first
   I2C_start(OLED_ADDR);                   // start transmission to OLED
   I2C_write(OLED_CMD_MODE);               // set command mode
-  for (uint8_t i = 0; i < OLED_INIT_LEN; i++)
+  for(uint8_t i = 0; i < OLED_INIT_LEN; i++)
     I2C_write(pgm_read_byte(&OLED_INIT_CMD[i])); // send the command bytes
   I2C_stop();                             // stop transmission
 }
@@ -232,9 +251,9 @@ void OLED_printChar(char c) {
   uint16_t ptr = c - 32;                  // character pointer
   ptr += ptr << 2;                        // -> ptr = (ch - 32) * 5;
   I2C_write(0x00);                        // write space between characters
-  for (uint8_t i=5 ; i; i--) I2C_write(pgm_read_byte(&OLED_FONT[ptr++]));
+  for(uint8_t i=5 ; i; i--) I2C_write(pgm_read_byte(&OLED_FONT[ptr++]));
   OLED_x += 6;                            // update cursor
-  if (OLED_x > 122) {                     // line end ?
+  if(OLED_x > 122) {                      // line end ?
     I2C_stop();                           // stop data transmission
     OLED_setCursor(0,++OLED_y);           // set next line start
     I2C_start(OLED_ADDR);                 // start transmission to OLED
@@ -247,7 +266,7 @@ void OLED_printPrg(const char* p) {
   I2C_start(OLED_ADDR);                   // start transmission to OLED
   I2C_write(OLED_DAT_MODE);               // set data mode
   char ch = pgm_read_byte(p);             // read first character from program memory
-  while (ch) {                            // repeat until string terminator
+  while(ch) {                             // repeat until string terminator
     OLED_printChar(ch);                   // print character on OLED
     ch = pgm_read_byte(++p);              // read next character
   }
@@ -280,20 +299,20 @@ void OLED_printDec(uint16_t value) {
   for(uint8_t digit = 0; digit < 5; digit++) {  // 5 digits
     uint8_t digitval = 0;                       // start with digit value 0
     uint16_t divider = pgm_read_word(&DIVIDER[digit]);  // current divider
-    while (value >= divider) {                  // if current divider fits into the value
+    while(value >= divider) {                   // if current divider fits into the value
       leadflag = 1;                             // end of leading spaces
       digitval++;                               // increase digit value
       value -= divider;                         // decrease value by divider
     }
-    if (leadflag || (digit == 4)) OLED_printChar('0' + digitval);   // print the digit
+    if(leadflag || (digit == 4)) OLED_printChar('0' + digitval);   // print the digit
     else OLED_printChar(' ');                   // print leading space
   }
   I2C_stop();                                   // stop transmission
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // High-Voltage Serial Programmer Implementation
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Target devices definitions
 #define TGT_ERROR         0
@@ -332,7 +351,7 @@ void OLED_printDec(uint16_t value) {
 #define HVSP_SDO_REL()    DDRA  &= ~(1<<SDO_PIN)
 #define HVSP_SDO_BIT      (PINA &   (1<<SDO_PIN))
 #define HVSP_CLOCKOUT()   HVSP_SCI_HIGH(); HVSP_SCI_LOW()
-#define HVSP_BUSY_WAIT()  while (!HVSP_SDO_BIT)
+#define HVSP_BUSY_WAIT()  while(!HVSP_SDO_BIT)
 
 // Program for ATtiny13
 const uint8_t PROG_T13_LENGTH = 72;
@@ -438,7 +457,7 @@ void HVSP_readSignature(void) {
   signature |= HVSP_sendInstr(0x00, 0x6C);// Instr4: read the signature byte
 
   // set variables according to the signature
-  switch (signature) {
+  switch(signature) {
     case T13_SIG: target   = TGT_T13;   outLFUSE = T13_LFUSE;
                   outHFUSE = T13_HFUSE; break;
     case T25_SIG: target   = TGT_T25;   outLFUSE = Tx5_LFUSE;
@@ -521,7 +540,7 @@ void HVSP_eraseChip(void) {
 void HVSP_writeEEPROM(uint16_t addr, uint8_t data) {
   HVSP_sendInstr(0x11, 0x4C);             // command to enter EEPROM programming mode
   HVSP_sendInstr(addr, 0x0C);             // Instr1: write address low byte
-  if (target != TGT_T13) HVSP_sendInstr(addr>>8, 0x1C); // Instr2: write address high byte
+  if(target != TGT_T13) HVSP_sendInstr(addr>>8, 0x1C); // Instr2: write address high byte
   HVSP_sendInstr(data, 0x2C);             // Instr3(2): data byte
   HVSP_sendInstr(0x00, 0x6D);             // Instr4(3)
   HVSP_sendInstr(0x00, 0x64);             // Instr5(4)
@@ -567,9 +586,9 @@ void HVSP_writeFlash(const uint8_t* p, uint16_t length) {
   HVSP_sendInstr(0x00, 0x4C);             // no operation commandto exit flash programming
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // Frequency Measurement Implementation
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Target power macros
 #define TGT_VCC_ON()    {DDRB |= (1<<VCC_PIN); PORTB |= (1<<VCC_PIN); _delay_ms(128);}
@@ -615,9 +634,9 @@ ISR(TIM1_COMPA_vect) {
   FRQ_busy = 0;                     // sampling complete
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // ADC and Button Functions
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Setup ADC with prescaler 64
 void ADC_init(void) {
@@ -664,8 +683,8 @@ uint8_t readButton(void) {
   while(ADCSRA & (1<<ADSC));        // wait for ADC conversion complete
   uint16_t rawbutton = ADC;         // get result
   uint8_t button = 0;               // figure out button number ...
-  while (rawbutton < pgm_read_word(&THRESHOLDS[button])) button++;
-  return (button);                  // return button number
+  while(rawbutton < pgm_read_word(&THRESHOLDS[button])) button++;
+  return(button);                   // return button number
 }
 
 // Wait for a button press; return pressed button number
@@ -678,12 +697,12 @@ uint8_t waitButton(void) {
     button = readButton();          // read button number
   } while(!button);                 // until button is pressed
   TGT_RESET_OFF();                  // target off
-  return (button);
+  return(button);
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // Calibration Functions
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Text strings stored in program memory
 const char ExitKeyStr[] PROGMEM =       "Press any key to exit";
@@ -698,8 +717,8 @@ const char OsccalStr[] PROGMEM =        "OSCCAL value:    0x";
 
 // Calculate difference
 uint16_t diff(uint16_t a, uint16_t b) {
-  if (a > b) return (a - b);
-  return (b - a);
+  if(a > b) return(a - b);
+  return(b - a);
 }
 
 // Calibrate oscillator of target device
@@ -739,7 +758,7 @@ void TGT_calibrate(void) {
   // calibration process
   while(1) {
     // leave if current OSCCAL value is worse than the last one
-    if (diff(frequency, targetfreq) >= difference) break;
+    if(diff(frequency, targetfreq) >= difference) break;
 
     // print current calibration results
     OLED_setCursor(0,1);
@@ -749,8 +768,8 @@ void TGT_calibrate(void) {
     // calculate next OSCCAL value
     lastcalib = calib;
     difference = diff(frequency, targetfreq);
-    if (difference == 0) break;
-    if (frequency > targetfreq) calib--;
+    if(difference == 0) break;
+    if(frequency > targetfreq) calib--;
     else calib++;
 
     // program target for next calibration value
@@ -773,9 +792,9 @@ void TGT_calibrate(void) {
   waitButton();
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // Fuse Resetter Functions
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Read and print current fuse settings on the OLED
 void OLED_printFuses(void) {
@@ -788,7 +807,7 @@ void OLED_printFuses(void) {
   OLED_setCursor(0,1); OLED_printPrg(CurrentFuseStr);
   OLED_printPrg(PSTR("l: ")); OLED_printHex(inLFUSE);
   OLED_printPrg(PSTR(" - h: ")); OLED_printHex(inHFUSE);
-  if (target != TGT_T13) {OLED_printPrg(PSTR(" - e: ")); OLED_printHex(inEFUSE);}
+  if(target != TGT_T13) {OLED_printPrg(PSTR(" - e: ")); OLED_printHex(inEFUSE);}
 }
 
 // Reset fuses of target device
@@ -816,9 +835,9 @@ void TGT_resetFuses(void) {
   waitButton();
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // Main Function
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Text strings stored in program memory
 const char TitleScreen[]  PROGMEM = 
@@ -854,18 +873,18 @@ int main(void) {
     OLED_clearScreen();
     OLED_setCursor(0,0);
     OLED_printPrg(PSTR("Detecting ..."));
-    for (uint8_t i=8; i; i--) {
+    for(uint8_t i=8; i; i--) {
       HVSP_enterProgMode();
       HVSP_readSignature();
       HVSP_exitProgMode();
-      if (target != TGT_ERROR) break;
+      if(target != TGT_ERROR) break;
       _delay_ms(100);
     }
 
     // print detected device or ERROR
     OLED_setCursor(0,0);
     OLED_printPrg(PSTR("Detected: "));
-    if (target == TGT_ERROR) {
+    if(target == TGT_ERROR) {
       OLED_printPrg(PSTR("ERROR !"));
       OLED_setCursor(0,1);
       OLED_printPrg(ErrorScreen);
@@ -874,7 +893,7 @@ int main(void) {
     }
 
     OLED_printPrg(PSTR("ATtiny"));
-    switch (target) {
+    switch(target) {
       case TGT_T13:   OLED_printHex(0x13); break;
       case TGT_T25:   OLED_printHex(0x25); break;
       case TGT_T45:   OLED_printHex(0x45); break;
@@ -887,7 +906,7 @@ int main(void) {
 
     // read button and execute selected function
     uint8_t button = waitButton();
-    switch (button) {
+    switch(button) {
       case 1:         TGT_calibrate(); break;
       case 2:         TGT_resetFuses(); break;
       default:        break;
